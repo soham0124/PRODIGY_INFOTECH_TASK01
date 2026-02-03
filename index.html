@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature Converter</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="temp_converter.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #5a9dfc, #78ffd6);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+        .container {
+            background: #ffffffcc;
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            width: 350px;
+            backdrop-filter: blur(6px);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 26px;
+            color: #222;
+        }
+        label {
+            font-weight: bold;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 10px;
+            background: #f3f3f3;
+            font-size: 16px;
+        }
+        #convertButton {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: #0077ff;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        #convertButton:hover {
+            background: #005fd1;
+        }
+        .converted-section {
+            margin-top: 25px;
+            background: #f3f9ff;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+        #outputContainer p {
+            font-size: 18px;
+            margin: 8px 0;
+        }
+        span.value {
+            font-weight: bold;
+            color: #005fd1;
+        }
+        #messageBox {
+            margin-top: 10px;
+            color: red;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Temperature Converter</h1>
+
+        <div id="input">
+            <label for="temperatureInput">Temperature Value:</label>
+            <input type="number" id="temperatureInput" placeholder="Enter temperature">
+        </div>
+
+        <div id="temp_type">
+            <label for="unitSelect">Original Unit:</label>
+            <select id="unitSelect">
+                <option value="celsius">Celsius (°C)</option>
+                <option value="fahrenheit">Fahrenheit (°F)</option>
+                <option value="kelvin">Kelvin (K)</option>
+            </select>
+        </div>
+
+        <button id="convertButton">Convert</button>
+
+        <div id="convertedSection" class="converted-section">
+            <h2>Converted Temperatures:</h2>
+            <div id="outputContainer">
+                <p><span>Celsius:</span> <span id="celsiusOutput" class="value">--</span></p>
+                <p><span>Fahrenheit:</span> <span id="fahrenheitOutput" class="value">--</span></p>
+                <p><span>Kelvin:</span> <span id="kelvinOutput" class="value">--</span></p>
+            </div>
+        </div>
+
+        <div id="messageBox" role="alert"></div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tempInput = document.getElementById('temperatureInput');
+            const unitSelect = document.getElementById('unitSelect');
+            const convertButton = document.getElementById('convertButton');
+            const cOut = document.getElementById('celsiusOutput');
+            const fOut = document.getElementById('fahrenheitOutput');
+            const kOut = document.getElementById('kelvinOutput');
+            const messageBox = document.getElementById('messageBox');
+
+            function showMessage(msg) {
+                messageBox.textContent = msg;
+            }
+
+            function clearMessage() {
+                messageBox.textContent = '';
+            }
+
+            function format(n) {
+                // show integers without .00, otherwise show 2 decimals
+                if (Number.isInteger(n)) return String(n);
+                return Number(n).toFixed(2);
+            }
+
+            function convert() {
+                const raw = tempInput.value;
+                if (raw === '') {
+                    showMessage('Please enter a temperature value.');
+                    return;
+                }
+
+                const val = parseFloat(raw);
+                if (Number.isNaN(val)) {
+                    showMessage('Invalid number.');
+                    return;
+                }
+
+                const unit = unitSelect.value;
+                let c, f, k;
+
+                if (unit === 'celsius') {
+                    c = val;
+                    f = (c * 9) / 5 + 32;
+                    k = c + 273.15;
+                } else if (unit === 'fahrenheit') {
+                    f = val;
+                    c = ((f - 32) * 5) / 9;
+                    k = c + 273.15;
+                } else if (unit === 'kelvin') {
+                    k = val;
+                    c = k - 273.15;
+                    f = (c * 9) / 5 + 32;
+                }
+
+                // sanity check: absolute zero
+                if (k < 0) {
+                    showMessage('Value below absolute zero (0 K). Please enter a valid temperature.');
+                    // still show calculated values, but highlight message
+                } else {
+                    clearMessage();
+                }
+
+                cOut.textContent = format(Math.round((c + Number.EPSILON) * 100) / 100);
+                fOut.textContent = format(Math.round((f + Number.EPSILON) * 100) / 100);
+                kOut.textContent = format(Math.round((k + Number.EPSILON) * 100) / 100);
+            }
+
+            convertButton.addEventListener('click', convert);
+            tempInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') convert();
+            });
+        });
+    </script>
+</body>
+</html>
